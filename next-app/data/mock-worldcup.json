@@ -1,0 +1,432 @@
+{
+  "matches": [
+    {
+      "id": "match-001",
+      "group": "A 組",
+      "stage": "小組賽",
+      "homeTeam": "美國",
+      "awayTeam": "澳洲",
+      "homeScore": 2,
+      "awayScore": 1,
+      "status": "LIVE",
+      "utcDate": "2026-06-20T18:00:00Z",
+      "localDate": "2026-06-20 18:00",
+      "venue": "SoFi Stadium, Los Angeles"
+    },
+    {
+      "id": "match-002",
+      "group": "A 組",
+      "stage": "小組賽",
+      "homeTeam": "墨西哥",
+      "awayTeam": "荷蘭",
+      "homeScore": 1,
+      "awayScore": 3,
+      "status": "FINISHED",
+      "utcDate": "2026-06-20T10:00:00Z",
+      "localDate": "2026-06-20 10:00",
+      "venue": "Estadio Azteca, Mexico City"
+    },
+    {
+      "id": "match-003",
+      "group": "B 組",
+      "stage": "小組賽",
+      "homeTeam": "加拿大",
+      "awayTeam": "英格蘭",
+      "homeScore": 0,
+      "awayScore": 2,
+      "status": "FINISHED",
+      "utcDate": "2026-06-20T14:00:00Z",
+      "localDate": "2026-06-20 14:00",
+      "venue": "BC Place, Vancouver"
+    },
+    {
+      "id": "match-004",
+      "group": "B 組",
+      "stage": "小組賽",
+      "homeTeam": "巴西",
+      "awayTeam": "德國",
+      "homeScore": 0,
+      "awayScore": 0,
+      "status": "SCHEDULED",
+      "utcDate": "2026-06-21T15:00:00Z",
+      "localDate": "2026-06-21 15:00",
+      "venue": "MetLife Stadium, New York"
+    },
+    {
+      "id": "match-005",
+      "group": "C 組",
+      "stage": "小組賽",
+      "homeTeam": "阿根廷",
+      "awayTeam": "法國",
+      "homeScore": 0,
+      "awayScore": 0,
+      "status": "SCHEDULED",
+      "utcDate": "2026-06-21T19:00:00Z",
+      "localDate": "2026-06-21 19:00",
+      "venue": "Hard Rock Stadium, Miami"
+    },
+    {
+      "id": "match-006",
+      "group": "C 組",
+      "stage": "小組賽",
+      "homeTeam": "西班牙",
+      "awayTeam": "日本",
+      "homeScore": 0,
+      "awayScore": 0,
+      "status": "SCHEDULED",
+      "utcDate": "2026-06-22T12:00:00Z",
+      "localDate": "2026-06-22 12:00",
+      "venue": "Mercedes-Benz Stadium, Atlanta"
+    },
+    {
+      "id": "match-007",
+      "group": "D 組",
+      "stage": "小組賽",
+      "homeTeam": "葡萄牙",
+      "awayTeam": "韓國",
+      "homeScore": 0,
+      "awayScore": 0,
+      "status": "SCHEDULED",
+      "utcDate": "2026-06-22T16:00:00Z",
+      "localDate": "2026-06-22 16:00",
+      "venue": "Gillette Stadium, Boston"
+    },
+    {
+      "id": "match-008",
+      "group": "D 組",
+      "stage": "小組賽",
+      "homeTeam": "義大利",
+      "awayTeam": "比利時",
+      "homeScore": 0,
+      "awayScore": 0,
+      "status": "SCHEDULED",
+      "utcDate": "2026-06-23T18:00:00Z",
+      "localDate": "2026-06-23 18:00",
+      "venue": "Levi's Stadium, San Francisco"
+    }
+  ],
+  "standings": [
+    {
+      "group": "A 組",
+      "teams": [
+        {
+          "team": "美國",
+          "played": 1,
+          "won": 1,
+          "draw": 0,
+          "lost": 0,
+          "goalsFor": 2,
+          "goalsAgainst": 1,
+          "goalDifference": 1,
+          "points": 3
+        },
+        {
+          "team": "荷蘭",
+          "played": 1,
+          "won": 1,
+          "draw": 0,
+          "lost": 0,
+          "goalsFor": 3,
+          "goalsAgainst": 1,
+          "goalDifference": 2,
+          "points": 3
+        },
+        {
+          "team": "澳洲",
+          "played": 1,
+          "won": 0,
+          "draw": 0,
+          "lost": 1,
+          "goalsFor": 1,
+          "goalsAgainst": 2,
+          "goalDifference": -1,
+          "points": 0
+        },
+        {
+          "team": "墨西哥",
+          "played": 1,
+          "won": 0,
+          "draw": 0,
+          "lost": 1,
+          "goalsFor": 1,
+          "goalsAgainst": 3,
+          "goalDifference": -2,
+          "points": 0
+        }
+      ]
+    },
+    {
+      "group": "B 組",
+      "teams": [
+        {
+          "team": "英格蘭",
+          "played": 1,
+          "won": 1,
+          "draw": 0,
+          "lost": 0,
+          "goalsFor": 2,
+          "goalsAgainst": 0,
+          "goalDifference": 2,
+          "points": 3
+        },
+        {
+          "team": "巴西",
+          "played": 0,
+          "won": 0,
+          "draw": 0,
+          "lost": 0,
+          "goalsFor": 0,
+          "goalsAgainst": 0,
+          "goalDifference": 0,
+          "points": 0
+        },
+        {
+          "team": "德國",
+          "played": 0,
+          "won": 0,
+          "draw": 0,
+          "lost": 0,
+          "goalsFor": 0,
+          "goalsAgainst": 0,
+          "goalDifference": 0,
+          "points": 0
+        },
+        {
+          "team": "加拿大",
+          "played": 1,
+          "won": 0,
+          "draw": 0,
+          "lost": 1,
+          "goalsFor": 0,
+          "goalsAgainst": 2,
+          "goalDifference": -2,
+          "points": 0
+        }
+      ]
+    },
+    {
+      "group": "C 組",
+      "teams": [
+        {
+          "team": "西班牙",
+          "played": 0,
+          "won": 0,
+          "draw": 0,
+          "lost": 0,
+          "goalsFor": 0,
+          "goalsAgainst": 0,
+          "goalDifference": 0,
+          "points": 0
+        },
+        {
+          "team": "阿根廷",
+          "played": 0,
+          "won": 0,
+          "draw": 0,
+          "lost": 0,
+          "goalsFor": 0,
+          "goalsAgainst": 0,
+          "goalDifference": 0,
+          "points": 0
+        },
+        {
+          "team": "法國",
+          "played": 0,
+          "won": 0,
+          "draw": 0,
+          "lost": 0,
+          "goalsFor": 0,
+          "goalsAgainst": 0,
+          "goalDifference": 0,
+          "points": 0
+        },
+        {
+          "team": "日本",
+          "played": 0,
+          "won": 0,
+          "draw": 0,
+          "lost": 0,
+          "goalsFor": 0,
+          "goalsAgainst": 0,
+          "goalDifference": 0,
+          "points": 0
+        }
+      ]
+    },
+    {
+      "group": "D 組",
+      "teams": [
+        {
+          "team": "葡萄牙",
+          "played": 0,
+          "won": 0,
+          "draw": 0,
+          "lost": 0,
+          "goalsFor": 0,
+          "goalsAgainst": 0,
+          "goalDifference": 0,
+          "points": 0
+        },
+        {
+          "team": "義大利",
+          "played": 0,
+          "won": 0,
+          "draw": 0,
+          "lost": 0,
+          "goalsFor": 0,
+          "goalsAgainst": 0,
+          "goalDifference": 0,
+          "points": 0
+        },
+        {
+          "team": "比利時",
+          "played": 0,
+          "won": 0,
+          "draw": 0,
+          "lost": 0,
+          "goalsFor": 0,
+          "goalsAgainst": 0,
+          "goalDifference": 0,
+          "points": 0
+        },
+        {
+          "team": "韓國",
+          "played": 0,
+          "won": 0,
+          "draw": 0,
+          "lost": 0,
+          "goalsFor": 0,
+          "goalsAgainst": 0,
+          "goalDifference": 0,
+          "points": 0
+        }
+      ]
+    }
+  ],
+  "bracket": [
+    {
+      "round": "Round of 32",
+      "matches": [
+        {
+          "id": "b32-1",
+          "homeTeam": "荷蘭",
+          "awayTeam": "澳洲",
+          "homeScore": 0,
+          "awayScore": 0,
+          "status": "SCHEDULED",
+          "utcDate": "2026-06-25T17:00:00Z",
+          "localDate": "2026-06-25 17:00",
+          "venue": "MetLife Stadium"
+        },
+        {
+          "id": "b32-2",
+          "homeTeam": "英格蘭",
+          "awayTeam": "美國",
+          "homeScore": 0,
+          "awayScore": 0,
+          "status": "SCHEDULED",
+          "utcDate": "2026-06-25T20:00:00Z",
+          "localDate": "2026-06-25 20:00",
+          "venue": "SoFi Stadium"
+        },
+        {
+          "id": "b32-3",
+          "homeTeam": "阿根廷",
+          "awayTeam": "墨西哥",
+          "homeScore": 0,
+          "awayScore": 0,
+          "status": "SCHEDULED",
+          "utcDate": "2026-06-26T17:00:00Z",
+          "localDate": "2026-06-26 17:00",
+          "venue": "Hard Rock Stadium"
+        },
+        {
+          "id": "b32-4",
+          "homeTeam": "西班牙",
+          "awayTeam": "加拿大",
+          "homeScore": 0,
+          "awayScore": 0,
+          "status": "SCHEDULED",
+          "utcDate": "2026-06-26T20:00:00Z",
+          "localDate": "2026-06-26 20:00",
+          "venue": "BC Place"
+        }
+      ]
+    },
+    {
+      "round": "Round of 16",
+      "matches": [
+        {
+          "id": "b16-1",
+          "homeTeam": "勝方 (b32-1)",
+          "awayTeam": "勝方 (b32-2)",
+          "homeScore": 0,
+          "awayScore": 0,
+          "status": "SCHEDULED",
+          "utcDate": "2026-06-29T18:00:00Z",
+          "localDate": "2026-06-29 18:00",
+          "venue": "AT&T Stadium"
+        },
+        {
+          "id": "b16-2",
+          "homeTeam": "勝方 (b32-3)",
+          "awayTeam": "勝方 (b32-4)",
+          "homeScore": 0,
+          "awayScore": 0,
+          "status": "SCHEDULED",
+          "utcDate": "2026-06-30T18:00:00Z",
+          "localDate": "2026-06-30 18:00",
+          "venue": "NRG Stadium"
+        }
+      ]
+    },
+    {
+      "round": "Quarter-finals",
+      "matches": [
+        {
+          "id": "qf-1",
+          "homeTeam": "勝方 (b16-1)",
+          "awayTeam": "勝方 (b16-2)",
+          "homeScore": 0,
+          "awayScore": 0,
+          "status": "SCHEDULED",
+          "utcDate": "2026-07-04T19:00:00Z",
+          "localDate": "2026-07-04 19:00",
+          "venue": "Gillette Stadium"
+        }
+      ]
+    },
+    {
+      "round": "Semi-finals",
+      "matches": [
+        {
+          "id": "sf-1",
+          "homeTeam": "勝方 (qf-1)",
+          "awayTeam": "勝方 (qf-2)",
+          "homeScore": 0,
+          "awayScore": 0,
+          "status": "SCHEDULED",
+          "utcDate": "2026-07-10T20:00:00Z",
+          "localDate": "2026-07-10 20:00",
+          "venue": "Mercedes-Benz Stadium"
+        }
+      ]
+    },
+    {
+      "round": "Final",
+      "matches": [
+        {
+          "id": "f-1",
+          "homeTeam": "勝方 (sf-1)",
+          "awayTeam": "勝方 (sf-2)",
+          "homeScore": 0,
+          "awayScore": 0,
+          "status": "SCHEDULED",
+          "utcDate": "2026-07-19T20:00:00Z",
+          "localDate": "2026-07-19 20:00",
+          "venue": "MetLife Stadium"
+        }
+      ]
+    }
+  ]
+}

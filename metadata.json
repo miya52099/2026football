@@ -1,0 +1,6 @@
+{
+  "name": "2026 世界盃比分查詢小工具",
+  "description": "提供 2026 世界盃賽程查詢、今日比賽比分、小組排名及淘汰賽對陣圖的即時查詢工具，支援 football-data.org API 快取機制與本地 fallback 備用資料。",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
