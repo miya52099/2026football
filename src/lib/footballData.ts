@@ -103,34 +103,73 @@ export async function fetchWorldCupDataFromAPI(apiKey?: string): Promise<WorldCu
     console.log("[FootballData] No API Key found, using local mock data.");
     return {
       ...(mockData as WorldCupData),
-      dataSource: "mock",
-      source: "mock",
+      dataSource: "fallback",
+      source: "mock-worldcup.json",
       isMock: true,
-      isFallback: false,
+      isFallback: true,
+      errorMessage: "football-data.org 暫時無法取得 2026 世界盃資料，已切換為備援資料",
       lastUpdated: getCurrentFormattedTime()
     };
   }
 
+  let matchesJson: any = null;
+  let standingsJson: any = null;
+  let apiSucceeded = false;
+  const headers = { "X-Auth-Token": token };
+
+  // Step 1: Try competitions/WC/matches and standings first
   try {
-    console.log("[FootballData] Fetching live data from football-data.org...");
-    
-    // World Cup Tournament ID is 2000 (or competition code 'WC')
-    const headers = { "X-Auth-Token": token };
-    
+    console.log("[FootballData] Attempting Step 1 fetch: competitions/WC/matches and standings...");
     const [matchesRes, standingsRes] = await Promise.all([
       fetch("https://api.football-data.org/v4/competitions/WC/matches", { headers }),
       fetch("https://api.football-data.org/v4/competitions/WC/standings", { headers })
     ]);
 
-    if (!matchesRes.ok || !standingsRes.ok) {
-      throw new Error(`API returned error statuses: matches(${matchesRes.status}) standings(${standingsRes.status})`);
+    if (matchesRes.ok && standingsRes.ok) {
+      matchesJson = await matchesRes.json();
+      standingsJson = await standingsRes.json();
+      apiSucceeded = true;
+    } else {
+      console.warn(`[FootballData] Step 1 returned non-OK status: matches(${matchesRes.status}) standings(${standingsRes.status})`);
     }
+  } catch (err) {
+    console.warn("[FootballData] Step 1 HTTP request failed:", err);
+  }
 
-    const matchesJson = await matchesRes.json();
-    const standingsJson = await standingsRes.json();
+  // Step 2: Try v4/matches next if Step 1 failed
+  if (!apiSucceeded) {
+    try {
+      console.log("[FootballData] Attempting Step 2 fetch fallback: /v4/matches...");
+      const matchesRes = await fetch("https://api.football-data.org/v4/matches", { headers });
+      if (matchesRes.ok) {
+        matchesJson = await matchesRes.json();
+        standingsJson = { standings: [] }; // Standings cannot be parsed from matches-only endpoint
+        apiSucceeded = true;
+      } else {
+        console.warn(`[FootballData] Step 2 returned non-OK status: ${matchesRes.status}`);
+      }
+    } catch (err) {
+      console.warn("[FootballData] Step 2 HTTP request failed:", err);
+    }
+  }
 
+  // Step 3: Parse and transform if API succeeded, otherwise fallback to mock
+  if (!apiSucceeded || !matchesJson?.matches || matchesJson.matches.length === 0) {
+    console.log("[FootballData] All live API options failed or returned no matches. Falling back to local mock data.");
+    return {
+      ...(mockData as WorldCupData),
+      dataSource: "fallback",
+      source: "mock-worldcup.json",
+      isMock: true,
+      isFallback: true,
+      errorMessage: "football-data.org 暫時無法取得 2026 世界盃資料，已切換為備援資料",
+      lastUpdated: getCurrentFormattedTime()
+    };
+  }
+
+  try {
     const rawMatches = matchesJson.matches || [];
-    const rawStandings = standingsJson.standings || [];
+    const rawStandings = standingsJson?.standings || [];
 
     // 1. Process matches
     const matches: Match[] = rawMatches.map((m: any) => {
@@ -183,7 +222,6 @@ export async function fetchWorldCupDataFromAPI(apiKey?: string): Promise<WorldCu
       });
 
     // 3. Process bracket (extracting knockout matches)
-    // We group knockout matches into distinct rounds
     const roundsMap: Record<string, Match[]> = {
       "Round of 32": [],
       "Round of 16": [],
@@ -214,39 +252,26 @@ export async function fetchWorldCupDataFromAPI(apiKey?: string): Promise<WorldCu
       { round: "Final", matches: roundsMap["Final"] }
     ];
 
-    // If matches array is empty (or no matches exist yet since it's early), default to mock
-    if (matches.length === 0) {
-      console.log("[FootballData] API returned empty matches list. Falling back to mock.");
-      return {
-        ...(mockData as WorldCupData),
-        dataSource: "fallback",
-        source: "fallback",
-        isMock: false,
-        isFallback: true,
-        lastUpdated: getCurrentFormattedTime()
-      };
-    }
-
     return {
       matches,
       standings,
       bracket,
       dataSource: "api",
-      source: "api",
+      source: "football-data.org",
       isMock: false,
       isFallback: false,
       lastUpdated: getCurrentFormattedTime()
     };
 
   } catch (error) {
-    console.error("[FootballData] Error fetching from live API:", error);
-    console.log("[FootballData] Safe fallback to mock-worldcup.json");
+    console.error("[FootballData] Exception during raw response mapping:", error);
     return {
       ...(mockData as WorldCupData),
       dataSource: "fallback",
-      source: "fallback",
-      isMock: false,
+      source: "mock-worldcup.json",
+      isMock: true,
       isFallback: true,
+      errorMessage: "football-data.org 暫時無法取得 2026 世界盃資料，已切換為備援資料",
       lastUpdated: getCurrentFormattedTime()
     };
   }

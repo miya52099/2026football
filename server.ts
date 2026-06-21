@@ -53,7 +53,21 @@ async function startServer() {
       res.json(data);
     } catch (err: any) {
       console.error("[Server API Error]:", err);
-      res.status(500).json({ error: "無法獲取世界盃數據，請稍後再試。" });
+      try {
+        const fallbackData = await fetchWorldCupDataFromAPI();
+        res.setHeader("Content-Type", "application/json");
+        res.status(200).json(fallbackData);
+      } catch (innerErr) {
+        res.status(200).json({
+          matches: [],
+          standings: [],
+          bracket: [],
+          source: "mock-worldcup.json",
+          isMock: true,
+          isFallback: true,
+          errorMessage: "football-data.org 暫時無法取得 2026 世界盃資料，已切換為備援資料"
+        });
+      }
     }
   });
 

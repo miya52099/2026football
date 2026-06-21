@@ -41,9 +41,19 @@ export async function GET(req: NextRequest) {
     });
   } catch (error: any) {
     console.error("[NextJS API Error]:", error);
-    return NextResponse.json(
-      { error: "無法獲取世界盃數據，請稍後再試。" },
-      { status: 500 }
-    );
+    try {
+      const fallbackData = await fetchWorldCupDataFromAPI();
+      return NextResponse.json(fallbackData);
+    } catch (innerErr) {
+      return NextResponse.json({
+        matches: [],
+        standings: [],
+        bracket: [],
+        source: "mock-worldcup.json",
+        isMock: true,
+        isFallback: true,
+        errorMessage: "football-data.org 暫時無法取得 2026 世界盃資料，已切換為備援資料"
+      });
+    }
   }
 }

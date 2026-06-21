@@ -252,18 +252,13 @@ export default function App() {
       {/* Main Content Area */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         
-        {/* Error Notification */}
-        {error && (
-          <div className="p-4 bg-rose-50 border border-rose-200 text-rose-800 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 text-sm shadow-sm animate-fade-in" id="error-alert">
-            <div className="grow">
-              <strong>連線發生錯誤：</strong> {error}
+        {/* Soft Warm Notice */}
+        {(data?.isFallback || data?.source === "mock-worldcup.json" || error) && (
+          <div className="p-4 bg-amber-50 border border-amber-200 text-amber-800 rounded-2xl flex items-center gap-3 text-sm shadow-sm animate-fade-in" id="fallback-soft-alert">
+            <span className="text-amber-500 text-base">⚠️</span>
+            <div className="font-medium">
+              API 暫時無法連線，已切換為備援資料
             </div>
-            <button
-              onClick={() => fetchScoreCenterData()}
-              className="px-4 py-1.5 bg-rose-600 text-white rounded-lg hover:bg-rose-700 transition font-semibold self-start md:self-auto shadow-sm"
-            >
-              重新重試
-            </button>
           </div>
         )}
 

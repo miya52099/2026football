@@ -39,8 +39,9 @@ export interface WorldCupData {
   standings: GroupStanding[];
   bracket: BracketRound[];
   dataSource?: "api" | "mock" | "fallback";
-  source?: "api" | "mock" | "fallback";
+  source?: string;
   lastUpdated?: string;
   isMock?: boolean;
   isFallback?: boolean;
+  errorMessage?: string;
 }
