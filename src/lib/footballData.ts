@@ -1,5 +1,12 @@
 import { WorldCupData, Match, GroupStanding, BracketRound } from "../types";
 import mockData from "../data/mock-worldcup.json";
+import { scrapeFifaScores } from "./providers/fifaScrapeProvider";
+import { fetchFreeFixtures } from "./providers/freeFixturesProvider";
+import { getMockData } from "./providers/mockProvider";
+
+let cacheData: WorldCupData | null = null;
+let cacheTime = 0;
+const CACHE_DURATION = 15 * 60 * 1000; // 15 minutes in ms
 
 // Team names mapping from English to Traditional Chinese
 const TEAM_MAP: Record<string, string> = {
@@ -97,182 +104,78 @@ function getCurrentFormattedTime(): string {
 }
 
 export async function fetchWorldCupDataFromAPI(apiKey?: string): Promise<WorldCupData> {
-  const token = apiKey || process.env.FOOTBALL_DATA_API_KEY;
-
-  if (!token) {
-    console.log("[FootballData] No API Key found, using local mock data.");
-    return {
-      ...(mockData as WorldCupData),
-      dataSource: "fallback",
-      source: "mock-worldcup.json",
-      isMock: true,
-      isFallback: true,
-      errorMessage: "football-data.org 暫時無法取得 2026 世界盃資料，已切換為備援資料",
-      lastUpdated: getCurrentFormattedTime()
-    };
+  const now = Date.now();
+  if (cacheData && (now - cacheTime < CACHE_DURATION)) {
+    console.log("[FootballData] Returning cached data.");
+    return cacheData;
   }
 
-  let matchesJson: any = null;
-  let standingsJson: any = null;
-  let apiSucceeded = false;
-  const headers = { "X-Auth-Token": token };
+  const requestedProvider = process.env.SCORE_PROVIDER || "fifa-scrape";
+  console.log(`[FootballData] Fetch triggered. Requested Provider: ${requestedProvider}`);
 
-  // Step 1: Try competitions/WC/matches and standings first
-  try {
-    console.log("[FootballData] Attempting Step 1 fetch: competitions/WC/matches and standings...");
-    const [matchesRes, standingsRes] = await Promise.all([
-      fetch("https://api.football-data.org/v4/competitions/WC/matches", { headers }),
-      fetch("https://api.football-data.org/v4/competitions/WC/standings", { headers })
-    ]);
+  let result: WorldCupData | null = null;
+  const errors: string[] = [];
 
-    if (matchesRes.ok && standingsRes.ok) {
-      matchesJson = await matchesRes.json();
-      standingsJson = await standingsRes.json();
-      apiSucceeded = true;
-    } else {
-      console.warn(`[FootballData] Step 1 returned non-OK status: matches(${matchesRes.status}) standings(${standingsRes.status})`);
-    }
-  } catch (err) {
-    console.warn("[FootballData] Step 1 HTTP request failed:", err);
-  }
-
-  // Step 2: Try v4/matches next if Step 1 failed
-  if (!apiSucceeded) {
+  // Try the requested provider or default chain
+  if (requestedProvider === "fifa-scrape") {
     try {
-      console.log("[FootballData] Attempting Step 2 fetch fallback: /v4/matches...");
-      const matchesRes = await fetch("https://api.football-data.org/v4/matches", { headers });
-      if (matchesRes.ok) {
-        matchesJson = await matchesRes.json();
-        standingsJson = { standings: [] }; // Standings cannot be parsed from matches-only endpoint
-        apiSucceeded = true;
-      } else {
-        console.warn(`[FootballData] Step 2 returned non-OK status: ${matchesRes.status}`);
-      }
-    } catch (err) {
-      console.warn("[FootballData] Step 2 HTTP request failed:", err);
+      result = await scrapeFifaScores();
+      result.isFallback = false;
+      result.source = "football-data.org";
+    } catch (err: any) {
+      errors.push(`fifa-scrape failed: ${err.message || err}`);
+      console.warn("[FootballData] fifa-scrape failed, falling back to free-fixtures...");
     }
   }
 
-  // Step 3: Parse and transform if API succeeded, otherwise fallback to mock
-  if (!apiSucceeded || !matchesJson?.matches || matchesJson.matches.length === 0) {
-    console.log("[FootballData] All live API options failed or returned no matches. Falling back to local mock data.");
-    return {
-      ...(mockData as WorldCupData),
-      dataSource: "fallback",
-      source: "mock-worldcup.json",
-      isMock: true,
-      isFallback: true,
-      errorMessage: "football-data.org 暫時無法取得 2026 世界盃資料，已切換為備援資料",
-      lastUpdated: getCurrentFormattedTime()
-    };
+  // Fallback 1: Try free-fixtures (if free-fixtures was explicitly requested OR if fifa-scrape failed)
+  if (!result && (requestedProvider === "free-fixtures" || requestedProvider === "fifa-scrape")) {
+    try {
+      result = await fetchFreeFixtures();
+    } catch (err: any) {
+      errors.push(`free-fixtures failed: ${err.message || err}`);
+      console.warn("[FootballData] free-fixtures failed, falling back to mock...");
+    }
   }
 
-  try {
-    const rawMatches = matchesJson.matches || [];
-    const rawStandings = standingsJson?.standings || [];
-
-    // 1. Process matches
-    const matches: Match[] = rawMatches.map((m: any) => {
-      // Map API status to ours (SCHEDULED, LIVE, FINISHED)
-      let status: "SCHEDULED" | "LIVE" | "FINISHED" = "SCHEDULED";
-      if (m.status === "IN_PLAY" || m.status === "PAUSED" || m.status === "LIVE") {
-        status = "LIVE";
-      } else if (m.status === "FINISHED" || m.status === "AWARDED") {
-        status = "FINISHED";
-      }
-
-      const homeScore = status === "SCHEDULED" ? "尚未開始" : (m.score?.fullTime?.home ?? 0);
-      const awayScore = status === "SCHEDULED" ? "尚未開始" : (m.score?.fullTime?.away ?? 0);
-
-      const groupClean = translateGroup(m.group);
-      
-      return {
-        id: String(m.id || `m-${Math.random()}`),
-        group: groupClean,
-        stage: translateStage(m.stage),
-        homeTeam: translateTeam(m.homeTeam?.name || m.homeTeam?.shortName),
-        awayTeam: translateTeam(m.awayTeam?.name || m.awayTeam?.shortName),
-        homeScore,
-        awayScore,
-        status,
-        utcDate: m.utcDate,
-        localDate: formatLocalDate(m.utcDate),
-        venue: m.venue || "世界盃體育場"
+  // Fallback 2: Try mock provider (if requested, or if other chains failed)
+  if (!result) {
+    try {
+      const mock = getMockData();
+      result = {
+        ...mock,
+        source: "mock-worldcup.json",
+        isMock: true,
+        isFallback: true,
+        errorMessage: "football-data.org 暫時無法取得 2026 世界盃資料，已切換為備援資料"
       };
-    });
+    } catch (err: any) {
+      errors.push(`mock failed: ${err.message || err}`);
+    }
+  }
 
-    // 2. Process standings
-    const standings: GroupStanding[] = rawStandings
-      .filter((s: any) => s.type === "TOTAL")
-      .map((s: any) => {
-        return {
-          group: translateGroup(s.group),
-          teams: (s.table || []).map((row: any) => ({
-            team: translateTeam(row.team?.name || row.team?.shortName),
-            played: row.playedGames || 0,
-            won: row.won || 0,
-            draw: row.draw || 0,
-            lost: row.lost || 0,
-            goalsFor: row.goalsFor || 0,
-            goalsAgainst: row.goalsAgainst || 0,
-            goalDifference: row.goalDifference || 0,
-            points: row.points || 0
-          }))
-        };
-      });
-
-    // 3. Process bracket (extracting knockout matches)
-    const roundsMap: Record<string, Match[]> = {
-      "Round of 32": [],
-      "Round of 16": [],
-      "Quarter-finals": [],
-      "Semi-finals": [],
-      "Final": []
-    };
-
-    matches.forEach(m => {
-      if (m.stage === "32強賽") {
-        roundsMap["Round of 32"].push(m);
-      } else if (m.stage === "16強賽") {
-        roundsMap["Round of 16"].push(m);
-      } else if (m.stage === "半準決賽 (8強)") {
-        roundsMap["Quarter-finals"].push(m);
-      } else if (m.stage === "準決賽 (4強)") {
-        roundsMap["Semi-finals"].push(m);
-      } else if (m.stage === "決賽") {
-        roundsMap["Final"].push(m);
-      }
-    });
-
-    const bracket: BracketRound[] = [
-      { round: "Round of 32", matches: roundsMap["Round of 32"] },
-      { round: "Round of 16", matches: roundsMap["Round of 16"] },
-      { round: "Quarter-finals", matches: roundsMap["Quarter-finals"] },
-      { round: "Semi-finals", matches: roundsMap["Semi-finals"] },
-      { round: "Final", matches: roundsMap["Final"] }
-    ];
-
-    return {
-      matches,
-      standings,
-      bracket,
-      dataSource: "api",
-      source: "football-data.org",
-      isMock: false,
-      isFallback: false,
-      lastUpdated: getCurrentFormattedTime()
-    };
-
-  } catch (error) {
-    console.error("[FootballData] Exception during raw response mapping:", error);
-    return {
+  // Absolute safeguard
+  if (!result) {
+    result = {
       ...(mockData as WorldCupData),
-      dataSource: "fallback",
       source: "mock-worldcup.json",
       isMock: true,
       isFallback: true,
-      errorMessage: "football-data.org 暫時無法取得 2026 世界盃資料，已切換為備援資料",
-      lastUpdated: getCurrentFormattedTime()
+      errorMessage: "football-data.org 暫時無法取得 2026 世界盃資料，已切換為備援資料"
     };
   }
+
+  // Make sure debug and updated states are appended
+  result.lastUpdated = getCurrentFormattedTime();
+  result.debug = {
+    requestedProvider,
+    errors,
+    timestamp: now
+  };
+
+  // Cache successful result
+  cacheData = result;
+  cacheTime = now;
+
+  return result;
 }

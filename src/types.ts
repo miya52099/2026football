@@ -44,4 +44,5 @@ export interface WorldCupData {
   isMock?: boolean;
   isFallback?: boolean;
   errorMessage?: string;
+  debug?: any;
 }

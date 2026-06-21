@@ -257,7 +257,7 @@ export default function App() {
           <div className="p-4 bg-amber-50 border border-amber-200 text-amber-800 rounded-2xl flex items-center gap-3 text-sm shadow-sm animate-fade-in" id="fallback-soft-alert">
             <span className="text-amber-500 text-base">⚠️</span>
             <div className="font-medium">
-              API 暫時無法連線，已切換為備援資料
+              目前使用備援資料
             </div>
           </div>
         )}
