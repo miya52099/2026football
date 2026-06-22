@@ -18,7 +18,7 @@ export default function SearchBar({ value, onChange, onClear }: SearchBarProps) 
   ];
 
   return (
-    <div className="w-full max-w-2xl mx-auto space-y-3" id="next-search-bar">
+    <div className="w-full max-w-2xl mx-auto space-y-3.5" id="next-search-bar">
       <div className="relative flex items-center">
         <div className="absolute left-4 text-slate-400 pointer-events-none">
           <Search size={20} />
@@ -28,29 +28,29 @@ export default function SearchBar({ value, onChange, onClear }: SearchBarProps) 
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder="搜尋隊伍名稱、組別、或多個隊伍（例如：美國 澳洲）..."
-          className="w-full pl-12 pr-12 py-3.5 bg-slate-800/80 border border-slate-700 hover:border-slate-600 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 text-white placeholder-slate-400 rounded-xl shadow-lg transition-all outline-none text-sm md:text-base"
+          className="w-full pl-12 pr-12 py-3.5 bg-white border border-slate-200 hover:border-slate-300 focus:border-blue-600 focus:ring-4 focus:ring-blue-600/10 text-slate-800 placeholder-slate-400 rounded-xl shadow-sm transition-all outline-none text-sm md:text-base font-sans font-medium"
         />
         {value && (
           <button
             type="button"
             onClick={onClear}
-            className="absolute right-4 p-1 text-slate-400 hover:text-white rounded-full hover:bg-slate-700 transition"
+            className="absolute right-4 p-1 text-slate-400 hover:text-slate-700 rounded-full hover:bg-slate-100 transition"
           >
             <X size={18} />
           </button>
         )}
       </div>
 
-      <div className="flex flex-wrap gap-2 items-center text-xs md:text-sm text-slate-400 pl-1">
-        <span className="font-medium text-slate-500">熱門搜尋：</span>
+      <div className="flex flex-wrap gap-2 items-center text-xs md:text-sm text-slate-500 pl-1">
+        <span className="font-semibold text-slate-400">熱門搜尋：</span>
         {quickSearches.map((item, index) => (
           <button
             key={index}
             onClick={() => onChange(item.value)}
-            className={`px-3 py-1 rounded-full text-xs font-medium border transition-all duration-150 ${
+            className={`px-3.5 py-1 rounded-full text-xs font-semibold border transition-all duration-150 ${
               value === item.value
-                ? "bg-cyan-500/20 text-cyan-400 border-cyan-500/50"
-                : "bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700/80 hover:border-slate-600"
+                ? "bg-blue-50 text-blue-600 border-blue-200"
+                : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50 hover:border-slate-300"
             }`}
           >
             {item.label}

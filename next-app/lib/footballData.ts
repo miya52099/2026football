@@ -152,47 +152,57 @@ export async function fetchWorldCupDataFromAPI(): Promise<WorldCupData> {
     return cacheData;
   }
 
-  const requestedProvider = process.env.SCORE_PROVIDER || "fifa-scrape";
-  console.log(`[NextJS FootballData] Fetch triggered. Requested Provider: ${requestedProvider}`);
+  console.log(`[NextJS FootballData] Fetching live data...`);
 
   let result: WorldCupData | null = null;
-  const errors: string[] = [];
+  let providerTried = "fifa-scrape";
+  let source = "";
+  let matchesCount = 0;
+  let isFallback = false;
+  let isMock = false;
 
-  // Try the requested provider or default chain
-  if (requestedProvider === "fifa-scrape") {
-    try {
-      result = await scrapeFifaScores();
-      result.isFallback = false;
-      result.source = "football-data.org";
-    } catch (err: any) {
-      errors.push(`fifa-scrape failed: ${err.message || err}`);
-      console.warn("[NextJS FootballData] fifa-scrape failed, falling back to free-fixtures...");
+  // 1. Try FIFA official page scraper
+  try {
+    const scraped = await scrapeFifaScores();
+    if (scraped && scraped.matches && scraped.matches.length > 0) {
+      result = scraped;
+      source = "fifa.com";
+      isFallback = false;
+      isMock = false;
     }
+  } catch (err) {
+    console.warn("[NextJS FootballData] FIFA scraper failed or pre-event phase. Trying local-fixtures fallback...");
   }
 
-  // Fallback 1: Try free-fixtures (if free-fixtures was explicitly requested OR if fifa-scrape failed)
-  if (!result && (requestedProvider === "free-fixtures" || requestedProvider === "fifa-scrape")) {
-    try {
-      result = await fetchFreeFixtures();
-    } catch (err: any) {
-      errors.push(`free-fixtures failed: ${err.message || err}`);
-      console.warn("[NextJS FootballData] free-fixtures failed, falling back to mock...");
-    }
-  }
-
-  // Fallback 2: Try mock provider (if requested, or if other chains failed)
+  // 2. Fallback to local-fixtures
   if (!result) {
     try {
-      const mock = getMockData();
-      result = {
-        ...mock,
-        source: "mock-worldcup.json",
-        isMock: true,
-        isFallback: true,
-        errorMessage: "football-data.org 暫時無法取得 2026 世界盃資料，已切換為備援資料"
-      } as unknown as WorldCupData;
-    } catch (err: any) {
-      errors.push(`mock failed: ${err.message || err}`);
+      providerTried = "local-fixtures";
+      const localData = await fetchFreeFixtures();
+      if (localData && localData.matches && localData.matches.length > 0) {
+        result = localData;
+        source = "local-fixtures";
+        isFallback = true;
+        isMock = false;
+      }
+    } catch (err) {
+      console.warn("[NextJS FootballData] local-fixtures fallback failed. Trying mock fallback...");
+    }
+  }
+
+  // 3. Fallback to mock
+  if (!result) {
+    try {
+      providerTried = "mock-worldcup.json";
+      const mockResult = getMockData();
+      if (mockResult && mockResult.matches && mockResult.matches.length > 0) {
+        result = mockResult;
+        source = "mock-worldcup.json";
+        isFallback = true;
+        isMock = true;
+      }
+    } catch (err) {
+      console.warn("[NextJS FootballData] Mock fallback failed.");
     }
   }
 
@@ -202,17 +212,25 @@ export async function fetchWorldCupDataFromAPI(): Promise<WorldCupData> {
       ...(mockData as any),
       source: "mock-worldcup.json",
       isMock: true,
-      isFallback: true,
-      errorMessage: "football-data.org 暫時無法取得 2026 世界盃資料，已切換為備援資料"
+      isFallback: true
     } as unknown as WorldCupData;
+    source = "mock-worldcup.json";
+    isFallback = true;
+    isMock = true;
   }
 
-  // Make sure debug and updated states are appended
+  matchesCount = result.matches ? result.matches.length : 0;
+
+  result.source = source;
+  result.isFallback = isFallback;
+  result.isMock = isMock;
   result.lastUpdated = getCurrentFormattedTime();
-  (result as any).debug = {
-    requestedProvider,
-    errors,
-    timestamp: now
+  result.debug = {
+    providerTried,
+    source,
+    matchesCount,
+    isFallback,
+    isMock
   };
 
   // Cache successful result

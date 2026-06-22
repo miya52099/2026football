@@ -1,40 +1,35 @@
 import { NextRequest, NextResponse } from "next/server";
 import { fetchWorldCupDataFromAPI } from "../../../lib/footballData";
-import { globalCache } from "../../../lib/cache";
 
 export const dynamic = "force-dynamic";
 
-// Keep a module-scoped timestamp for rate limiting
-let lastNextLiveFetchTime = 0;
+let apiCacheData: any = null;
+let apiCacheTime = 0;
+const CACHE_TTL = 15 * 60 * 1000; // 15 minutes cache
 
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-    let forceRefresh = searchParams.get("refresh") === "true";
-    
-    const cacheKey = "worldcup-next-cache";
-    
-    // Throttling logic
+    const forceRefresh = searchParams.get("refresh") === "true";
     const now = Date.now();
-    if (forceRefresh && now - lastNextLiveFetchTime < 60000) {
-      console.log(`[NextJS API] Throttling active: last live fetch was ${Math.round((now - lastNextLiveFetchTime)/1000)}s ago. Reusing cache if possible.`);
-      forceRefresh = false;
-    }
 
-    let data = forceRefresh ? null : globalCache.get(cacheKey);
-
-    if (!data) {
-      console.log("[NextJS API] Cache miss or force refresh. Fetching data...");
-      data = await fetchWorldCupDataFromAPI();
-      globalCache.set(cacheKey, data);
-      
-      // Update our timestamp on successful run
-      lastNextLiveFetchTime = Date.now();
-    } else {
+    if (!forceRefresh && apiCacheData && (now - apiCacheTime < CACHE_TTL)) {
       console.log("[NextJS API] Cache hit. Returning cached data.");
+      return NextResponse.json(apiCacheData, {
+        status: 200,
+        headers: {
+          "Cache-Control": "public, s-maxage=900, stale-while-revalidate=60",
+        },
+      });
     }
+
+    console.log("[NextJS API] Cache miss or force refresh. Fetching data...");
+    const data = await fetchWorldCupDataFromAPI();
+    apiCacheData = data;
+    apiCacheTime = now;
 
     return NextResponse.json(data, {
+      status: 200,
       headers: {
         "Cache-Control": "public, s-maxage=900, stale-while-revalidate=60",
       },
@@ -42,8 +37,8 @@ export async function GET(req: NextRequest) {
   } catch (error: any) {
     console.error("[NextJS API Error]:", error);
     try {
-      const fallbackData = await fetchWorldCupDataFromAPI();
-      return NextResponse.json(fallbackData);
+      const data = await fetchWorldCupDataFromAPI();
+      return NextResponse.json(data, { status: 200 });
     } catch (innerErr) {
       return NextResponse.json({
         matches: [],
@@ -52,8 +47,14 @@ export async function GET(req: NextRequest) {
         source: "mock-worldcup.json",
         isMock: true,
         isFallback: true,
-        errorMessage: "football-data.org 暫時無法取得 2026 世界盃資料，已切換為備援資料"
-      });
+        debug: {
+          providerTried: "emergency-fallback",
+          source: "mock-worldcup.json",
+          matchesCount: 0,
+          isFallback: true,
+          isMock: true
+        }
+      }, { status: 200 });
     }
   }
 }
